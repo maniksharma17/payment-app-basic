@@ -40,6 +40,14 @@ const accountsSchema = new mongoose.Schema({
     }
 })
 
+userSchema.pre('save', function(next){
+    //capitialise
+    this.firstName = this.firstName.charAt(0).toUpperCase() + this.firstName.slice(1).toLowerCase()
+    this.lastName = this.lastName.charAt(0).toUpperCase() + this.lastName.slice(1).toLowerCase()
+    next()
+})
+
+
 const User = mongoose.model("User", userSchema)
 const Account = mongoose.model("Account", accountsSchema)
 

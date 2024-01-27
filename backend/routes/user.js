@@ -1,10 +1,18 @@
 const express = require("express")
 const jwt = require("jsonwebtoken")
+const cors = require("cors")
 const JWT_SECRET_KEY = require("../config")
 const router = express.Router()
 const { User, Account } = require("../database/db")
 const { authMiddleware } = require("../middleware/middleware")
 const { signupSchema, signinSchema, updateSchema } = require("../auth/userSchema")
+
+router.use(cors())
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Add any necessary logging or cleanup logic here
+  });
 
 // signup route
 router.post("/signup", async (req, res)=>{
@@ -15,7 +23,9 @@ router.post("/signup", async (req, res)=>{
         const existingUser = await User.findOne({username: userData.username})
     
         if (existingUser){
-            res.status(411).json({message: "Username already exixts."})
+            res.status(200).json({message: "Username already exixts.", error: true})
+            
+
         } else{
             User.create({
                 username: userData.username,
@@ -32,17 +42,19 @@ router.post("/signup", async (req, res)=>{
                 })
 
 
-
                 res.status(200).json({
                     message: "User created successfully",
-                    token: token})
+                    token: token
+                    })
+                return
                 })
 
            
         }
     }
     else {
-        res.json(parsedUserData.error.issues[0].message)
+        res.json({parsedUserData, parseError: true})
+        return
     }
 })
 
@@ -52,8 +64,9 @@ router.post("/signin", async (req, res)=>{
     
     if (!(signinSchema.safeParse(userData).success)){
         res.status(411).json({
-            message: "Invalid Data"
+            message: "Invalid username / password", error: true
         })
+        return
     }
 
     const existingUser = await User.findOne({username: userData.username, password: userData.password})
@@ -61,17 +74,17 @@ router.post("/signin", async (req, res)=>{
     if (existingUser){
         const token = jwt.sign({userID: existingUser._id}, JWT_SECRET_KEY)
         res.status(200).json({
-            token: token
+            token: token, firstName: existingUser.firstName
         })
     } else{
         res.status(411).json({
-            message: "User does not exists."
+            message: "Username / password does not exist.", error: true
         })
     }
 })
 
 // update route
-router.put("/", authMiddleware, (req, res)=>{
+router.put("/", authMiddleware, async (req, res)=>{
     const userID = req.userID
     const userData = req.body
 
@@ -80,17 +93,15 @@ router.put("/", authMiddleware, (req, res)=>{
         res.json({message: parsedUserData.error.issues[0].message})
     }
 
-    User.updateOne({_id: userID}, {
-        $set:{
+    await User.updateOne({_id: userID}, {
+        "$set":{
             password: userData.password,
             firstName: userData.firstName,
             lastName: userData.lastName
         }
-    }).then(()=>{
-        res.json({message: "Updated successfully."})
-    }).catch((e)=>{
-        res.json({message: "Error while updating."})
     })
+
+    res.json({message: "Updated successfully."})
 })
 
 // all users route
@@ -119,5 +130,11 @@ router.get("/bulk", authMiddleware, (req, res)=>{
 
 })
 
+router.get("/getUser", authMiddleware, async (req, res) => {
+    const userid = req.query.id
+
+    const user = await User.findOne({_id: userid})
+    res.json({user})
+})
 
 module.exports = router

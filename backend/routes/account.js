@@ -1,9 +1,11 @@
 const express = require("express")
 const mongoose = require("mongoose")
+const cors = require("cors")
 const { authMiddleware } = require("../middleware/middleware")
 const { Account } = require("../database/db")
 const router = express.Router()
 
+router.use(cors())
 router.use(authMiddleware)
 
 router.get("/balance", async (req, res)=>{
@@ -40,13 +42,13 @@ router.post("/transfer", async (req, res)=>{
     }
 
     await Account.updateOne({userId: fromAccount}, {
-        $inc: {
+        "$inc": {
             balance: -amount
         }
     }).session(session)
 
     await Account.updateOne({userId: toAccount}, {
-            $inc: {
+            "$inc": {
                 balance: amount
             }
     }).session(session)
