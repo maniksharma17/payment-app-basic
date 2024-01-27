@@ -2,6 +2,7 @@ import {useNavigate} from 'react-router-dom'
 import { firstAtom, lastAtom, passwordAtom, tokenAtom, usernameAtom } from '../state/atoms'
 import { useRecoilState, useSetRecoilState } from 'recoil'
 import { useState } from 'react'
+import { BASE_URL } from '../../../config'
 
 export default function Signup() {
     const navigate = useNavigate()
@@ -95,7 +96,7 @@ export default function Signup() {
                   className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-lg hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   onClick={()=>{
 
-                   fetch("http://localhost:3000/api/v1/user/signup", {
+                   fetch(`${BASE_URL}/api/v1/user/signup`, {
                     method: "POST",
                     body: JSON.stringify({
                         username: username,

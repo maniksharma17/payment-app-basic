@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import { usernameAtom, passwordAtom, tokenAtom, firstAtom } from '../state/atoms'
+import { BASE_URL } from '../../../config'
 
 export default function Signin() {
     const navigate = useNavigate()
@@ -64,7 +65,7 @@ export default function Signin() {
                  
                   className="flex w-full shadow-lg justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     onClick={()=>{
-                        fetch("http://localhost:3000/api/v1/user/signin", {
+                        fetch(`${BASE_URL}/api/v1/user/signin`, {
                             method: "POST",
                             body: JSON.stringify({
                                 username: username, password: password

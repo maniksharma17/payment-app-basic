@@ -2,6 +2,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenAtom, firstAtom, paymentUserInfoAtom } from '../state/atoms'
 import { useNavigate } from 'react-router-dom'
+import { BASE_URL } from '../../../config'
 
 export default function Dashboard(){
 
@@ -20,7 +21,7 @@ export default function Dashboard(){
    
     
     useEffect(()=>{
-        fetch("http://localhost:3000/api/v1/account/balance", {
+        fetch(`${BASE_URL}/api/v1/account/balance`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -38,7 +39,7 @@ export default function Dashboard(){
         
 
     useEffect(()=>{
-        fetch("http://localhost:3000/api/v1/user/bulk?filter=" + filter, {
+        fetch(`${BASE_URL}/api/v1/user/bulk?filter=${filter}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -58,7 +59,7 @@ export default function Dashboard(){
     return <div className='relative bg-[#2b3137] text-slate-50'>
         {/* Header */}
 
-        <div className="flex flex-row justify-between px-5 py-4 items-center w-full bg-black shadow-xl">
+        <div className="flex flex-row justify-between px-2 py-4 items-center w-full bg-black shadow-xl">
             {/* Logo */}
             <div className="text-2xl md:text-4xl font-bold md:mx-5 text-slate-50">
                 PayPal
@@ -90,8 +91,8 @@ export default function Dashboard(){
             </div>
             
             {/* User Message and Icon */}
-            <div  className="flex flex-row justify-evenly md:w-2/12 w-6/12 items-center text-slate-50">
-                <div className="text-lg font-light mx-2">Hello, {firstName.charAt(0).toUpperCase() + firstName.slice(1)}</div>
+            <div  className="flex flex-row justify-end md:w-2/12 w-2/5 md:mr-5 items-center text-slate-50">
+                <div className="text-lg font-light mx-2 text-center w-1/2">Hello, {firstName.charAt(0).toUpperCase() + firstName.slice(1)}</div>
                 <div className="bg-green-500 text-slate-950 p-6 rounded-full h-[40px] relative">
                     <div className="absolute top-2 left-3.5 text-2xl font-bold">{firstName[0].toUpperCase()}</div>
                 </div>
@@ -128,7 +129,7 @@ function Person({user, setPaymentBox, paymentBox}){
     const [ id, setId ] = useState(user._id)
 
     return <>
-    <div className="flex flex-col md:px-5 px-2 w-[90%] m-auto">              
+    <div className="flex flex-col md:px-5 px-2 w-full m-auto">              
         <div key={user._id} className="flex flex-row justify-start gap-3 md:gap-5 items-center md:px-5 px-2 py-3 my-2 border border-1 border-green-500 bg-slate-800 relative">
                 <div className="bg-green-500 text-slate-950 p-6 rounded-full relative block md:block">
                     <p className='absolute md:top-2 md:left-3.5 top-2.5 left-4 font-bold md:text-2xl text-xl'>{user.firstName[0].toUpperCase()}</p>
@@ -142,7 +143,7 @@ function Person({user, setPaymentBox, paymentBox}){
                     setId(user._id)
                     console.log(id)
                     setPaymentBox(!paymentBox)
-                    fetch("http://localhost:3000/api/v1/user/getUser?id=" + id, {
+                    fetch(`${BASE_URL}/api/v1/user/getUser?id=${id}`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -156,7 +157,7 @@ function Person({user, setPaymentBox, paymentBox}){
                         setPayInfo(info.user)
                         console.log(payInfo)
                     })
-                }} className="border border-3 border-black bg-green-500 text-black p-2 md:p-2 md:w-30 w-25 text-sm md:text-lg font-semibold absolute shadow-lg rounded-md right-5 top-4 md:top-3 hover:bg-white hover:text-slate-950">Payment</button>
+                }} className="border border-3 border-black bg-green-500 text-black p-2 md:p-2 md:w-30 w-25 text-sm md:text-lg font-semibold absolute shadow-lg rounded-md right-3 top-4 md:top-3 hover:bg-white hover:text-slate-950">Payment</button>
             </div>
         </div>
     </div>
@@ -167,7 +168,7 @@ function Person({user, setPaymentBox, paymentBox}){
 
 function Loader({loginMessage}){
     console.log(loginMessage)
-    return <div className="text-8xl font-bold mt-[10%] text-center" style={{display: loginMessage? "block" : "none"}}>
+    return <div className="md:text-8xl text-xl font-bold mt-[10%] text-center" style={{display: loginMessage? "block" : "none"}}>
         Loading...
     </div>
 }
@@ -202,8 +203,9 @@ function PaymentBox({user, paymentBox, setPaymentBox}){
             <input type='number' onChange={(e)=>{setAmount(e.target.value)}} className='w-full border border-3 border-green-500 bg-slate-700 px-2 py-1 text-xl outline-0 shadow-lg rounded'></input>
         </div>
         
-        <button onClick={()=>{
-            fetch("http://localhost:3000/api/v1/account/transfer", {
+        <button onClick={(e)=>{
+            
+            fetch(`${BASE_URL}/api/v1/account/transfer`, {
                 method: "POST",
                 body: JSON.stringify({
                     to: user._id,
@@ -218,8 +220,13 @@ function PaymentBox({user, paymentBox, setPaymentBox}){
                 const data = await res
                 const output = await data.json()
                 setMessage(output.message)
+                setTimeout(()=>{
+                    
+                    setPaymentBox(false)
+                }, 500)
+                
             })
-        }} className='bg-green-500 px-2 py-1 text-xl w-full rounded font-semibold text-slate-950 shadow-lg'>Pay</button>
+        }} id='payBtn' className='bg-green-500 px-2 py-1 text-xl w-full rounded font-semibold text-slate-950 shadow-lg active:bg-white active:text-black'>Pay</button>
         <div className='text-slate-50'>{message}</div>
     </div>
 }
