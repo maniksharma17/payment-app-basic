@@ -1,13 +1,15 @@
 const express = require("express")
 const jwt = require("jsonwebtoken")
 const cors = require("cors")
-const JWT_SECRET_KEY = require("../config")
+require('dotenv').config();
+const jwtkey = process.env.JWT_SECRET_KEY
 const router = express.Router()
 const { User, Account } = require("../database/db")
 const { authMiddleware } = require("../middleware/middleware")
 const { signupSchema, signinSchema, updateSchema } = require("../auth/userSchema")
 
 router.use(cors())
+console.log(jwtkey)
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -34,7 +36,7 @@ router.post("/signup", async (req, res)=>{
                 lastName: userData.lastName
             }).then((user)=>{
                 const userID = user._id
-                const token = jwt.sign({userID}, JWT_SECRET_KEY)
+                const token = jwt.sign({userID}, jwtkey)
 
                 Account.create({
                     userId: user._id,
@@ -72,7 +74,7 @@ router.post("/signin", async (req, res)=>{
     const existingUser = await User.findOne({username: userData.username, password: userData.password})
 
     if (existingUser){
-        const token = jwt.sign({userID: existingUser._id}, JWT_SECRET_KEY)
+        const token = jwt.sign({userID: existingUser._id}, jwtkey)
         res.status(200).json({
             token: token, firstName: existingUser.firstName
         })

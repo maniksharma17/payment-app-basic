@@ -1,5 +1,6 @@
-const JWT_SECRET_KEY = require("../config")
+const jwtkey = process.env.JWT_SECRET_KEY
 const jwt = require("jsonwebtoken")
+require('dotenv').config();
 
 
 function authMiddleware(req, res, next){
@@ -11,7 +12,7 @@ function authMiddleware(req, res, next){
     token = header.split(" ")[1]
  
     try {
-        const verifiedJWT = jwt.verify(token, JWT_SECRET_KEY)
+        const verifiedJWT = jwt.verify(token, jwtkey)
         req.userID = verifiedJWT.userID
         next()
     } catch(err) {
